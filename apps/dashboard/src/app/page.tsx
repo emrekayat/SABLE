@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { StatCard, Button, Card, ProofGeneratorModal } from "@repo/ui";
 import { TransactionProgress } from "@repo/aleo-sdk";
@@ -17,6 +17,11 @@ export default function HomePage() {
     completed: 0,
     status: "pending",
   });
+
+  // Debug: Log wallet state changes
+  useEffect(() => {
+    console.log("[Dashboard] Wallet state changed:", { connected, publicKey });
+  }, [connected, publicKey]);
 
   const handleRunPayroll = async () => {
     if (!connected || !requestTransaction) {
@@ -143,7 +148,7 @@ export default function HomePage() {
                     <p className="text-gray-500 flex items-center gap-2">
                       Connected
                       <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
-                        Leo Wallet
+                        Wallet
                       </span>
                     </p>
                     <p className="font-mono text-xs text-gray-700">

@@ -5,6 +5,7 @@ import "./globals.css";
 import { WalletProvider } from "@demox-labs/aleo-wallet-adapter-react";
 import { WalletModalProvider } from "@demox-labs/aleo-wallet-adapter-reactui";
 import { LeoWalletAdapter } from "@demox-labs/aleo-wallet-adapter-leo";
+import { PuzzleWalletAdapter } from "../lib/PuzzleWalletAdapter";
 import { useMemo } from "react";
 
 require("@demox-labs/aleo-wallet-adapter-reactui/styles.css");
@@ -21,6 +22,7 @@ export default function RootLayout({
       new LeoWalletAdapter({
         appName: "SABLE",
       }),
+      new PuzzleWalletAdapter(),
     ],
     []
   );
@@ -28,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <WalletProvider wallets={wallets} autoConnect>
+        <WalletProvider wallets={wallets} autoConnect={false} decentralization="required">
           <WalletModalProvider>
             {children}
           </WalletModalProvider>
