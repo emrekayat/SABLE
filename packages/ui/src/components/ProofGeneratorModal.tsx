@@ -23,11 +23,11 @@ export const ProofGeneratorModal: React.FC<ProofGeneratorModalProps> = ({
   transactionHash,
 }) => {
   const steps = [
-    { id: 1, name: "Initializing ZK Circuit", status: currentProgress > 0 ? "completed" : "current" },
-    { id: 2, name: "Generating Witness", status: currentProgress > 25 ? "completed" : currentProgress > 0 ? "current" : "pending" },
-    { id: 3, name: "Computing Proof", status: currentProgress > 50 ? "completed" : currentProgress > 25 ? "current" : "pending" },
-    { id: 4, name: "Verifying Constraints", status: currentProgress > 75 ? "completed" : currentProgress > 50 ? "current" : "pending" },
-    { id: 5, name: "Broadcasting Transaction", status: currentProgress === 100 ? "completed" : currentProgress > 75 ? "current" : "pending" },
+    { id: 1, name: "Initializing ZK Circuit", status: currentProgress > 10 ? "completed" : "current" },
+    { id: 2, name: "Generating Witness", status: currentProgress > 30 ? "completed" : currentProgress > 10 ? "current" : "pending" },
+    { id: 3, name: "Computing Proof", status: currentProgress > 55 ? "completed" : currentProgress > 30 ? "current" : "pending" },
+    { id: 4, name: "Verifying Constraints", status: currentProgress > 65 ? "completed" : currentProgress > 55 ? "current" : "pending" },
+    { id: 5, name: "Broadcasting Transaction", status: currentProgress >= 100 ? "completed" : currentProgress > 65 ? "current" : "pending" },
   ];
 
   return (

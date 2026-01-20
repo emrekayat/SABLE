@@ -129,31 +129,10 @@ export default function HomePage() {
         throw new Error("Transaction rejected or failed");
       }
 
-      // Transaction approved! Now broadcast
-      setProofProgress((prev) => ({
-        ...prev,
-        completed: 75,
-        currentEmployee: "Transaction approved! Preparing to broadcast...",
-      }));
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      // Step 7: Broadcasting to network
-      setProofProgress((prev) => ({
-        ...prev,
-        completed: 80,
-        currentEmployee: "Broadcasting transaction to Aleo network...",
-      }));
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Step 8: Confirming on blockchain
-      setProofProgress((prev) => ({
-        ...prev,
-        completed: 90,
-        currentEmployee: "Waiting for network confirmation...",
-      }));
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
-      // Step 9: Complete
+      // For Puzzle: transaction is already settled at this point
+      // For Leo: transaction is broadcast and confirmed
+      // Go directly to success!
+      
       setProofProgress((prev) => ({
         ...prev,
         completed: 100,
@@ -468,7 +447,7 @@ export default function HomePage() {
         onClose={handleCloseModal}
         batchId={proofProgress.batchId}
         totalEmployees={proofProgress.total}
-        currentProgress={(proofProgress.completed / proofProgress.total) * 100}
+        currentProgress={proofProgress.completed}
         currentStep={proofProgress.currentEmployee || "Initializing..."}
         estimatedTime="~2 minutes"
         transactionHash={transactionHash}
