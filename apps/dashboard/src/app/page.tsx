@@ -8,8 +8,9 @@ import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
 
 export default function HomePage() {
-  const { publicKey, connected } = useWallet();
+  const { publicKey, connected, requestTransaction } = useWallet();
   const [showProofModal, setShowProofModal] = useState(false);
+  const [transactionHash, setTransactionHash] = useState<string>("");
   const [proofProgress, setProofProgress] = useState<TransactionProgress>({
     batchId: "batch_001",
     total: 30,
@@ -17,21 +18,105 @@ export default function HomePage() {
     status: "pending",
   });
 
-  const handleRunPayroll = () => {
+  const handleRunPayroll = async () => {
+    if (!connected || !requestTransaction) {
+      alert("Please connect your wallet first");
+      return;
+    }
+
     setShowProofModal(true);
-    simulatePayrollProcessing();
+    await executePayrollTransaction();
   };
 
-  const simulatePayrollProcessing = async () => {
-    // Simulate ZK proof generation progress
-    for (let i = 0; i <= 100; i += 5) {
-      await new Promise((resolve) => setTimeout(resolve, 200));
+  const executePayrollTransaction = async () => {
+    try {
+      // Step 1: Initializing
       setProofProgress((prev) => ({
         ...prev,
-        completed: Math.min(i, prev.total),
-        status: i === 100 ? "completed" : "processing",
-        currentEmployee: i < 100 ? `Employee ${Math.floor((i / 100) * 30) + 1}` : undefined,
+        completed: 20,
+        status: "processing",
+        currentEmployee: "Preparing batch_001",
       }));
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Step 2: Generating Witness
+      setProofProgress((prev) => ({
+        ...prev,
+        completed: 40,
+        currentEmployee: "Processing employee records...",
+      }));
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Step 3: Request transaction from Leo Wallet
+      setProofProgress((prev) => ({
+        ...prev,
+        completed: 60,
+        currentEmployee: "Waiting for wallet approval...",
+      }));
+
+      if (!requestTransaction) {
+        throw new Error("Wallet not connected");
+      }
+
+      // Call the real deployed contract on testnet
+      const aleoTransaction = await requestTransaction({
+        program: "sable_payroll.aleo",
+        function: "process_batch",
+        inputs: [
+          "1field", // batch_id
+          "2400000u64", // total_amount
+          "30u32" // employee_count
+        ],
+        fee: 100000, // 0.0001 Aleo
+      } as any);
+
+      if (!aleoTransaction) {
+        throw new Error("Transaction rejected or failed");
+      }
+
+      // Step 4: Transaction submitted
+      setProofProgress((prev) => ({
+        ...prev,
+        completed: 80,
+        currentEmployee: "Transaction submitted to network...",
+      }));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Step 5: Complete
+      setProofProgress((prev) => ({
+        ...prev,
+        completed: 100,
+        status: "completed",
+        currentEmployee: "Payroll distribution complete!",
+      }));
+
+      // Set the real transaction hash
+      setTransactionHash(String(aleoTransaction));
+
+      // Auto-close modal after completion
+      setTimeout(() => {
+        setShowProofModal(false);
+        // Reset for next run
+        setTimeout(() => {
+          setProofProgress({
+            batchId: "batch_001",
+            total: 30,
+            completed: 0,
+            status: "pending",
+          });
+          setTransactionHash("");
+        }, 500);
+      }, 3000);
+    } catch (error) {
+      console.error("Payroll transaction failed:", error);
+      alert(`Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setShowProofModal(false);
+      setProofProgress({
+        batchId: "batch_001",
+        total: 30,
+        completed: 0,
+        status: "pending",
+      });
     }
   };
 
@@ -253,7 +338,7 @@ export default function HomePage() {
                 </div>
                 <h4 className="font-bold text-gray-900 mb-2">Shielded Records</h4>
                 <p className="text-sm text-gray-600">
-                  All salary data encrypted on-chain with Aleo's native privacy
+                  All salary data encrypted on-chain with Aleo&apos;s native privacy
                 </p>
               </div>
             </Card>
@@ -298,6 +383,7 @@ export default function HomePage() {
         currentProgress={(proofProgress.completed / proofProgress.total) * 100}
         currentStep={proofProgress.currentEmployee || "Initializing..."}
         estimatedTime="~2 minutes"
+        transactionHash={transactionHash}
       />
     </div>
   );

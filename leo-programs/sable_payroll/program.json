@@ -1,12 +1,9 @@
-[package]
-name = "sable_payroll"
-version = "0.1.0"
-description = "SABLE Payroll Distribution - Private salary distribution with batch processing and ZK tax proofs"
-license = "MIT"
-
-[build]
-options = []
-
-[dependencies]
-
-[dev-dependencies]
+{
+  "program": "sable_payroll.aleo",
+  "version": "0.1.0",
+  "description": "SABLE Payroll Distribution - Private salary distribution with batch processing and ZK tax proofs",
+  "license": "MIT",
+  "leo": "3.4.0",
+  "dependencies": null,
+  "dev_dependencies": null
+}

@@ -9,6 +9,7 @@ interface ProofGeneratorModalProps {
   currentProgress: number;
   currentStep: string;
   estimatedTime?: string;
+  transactionHash?: string;
 }
 
 export const ProofGeneratorModal: React.FC<ProofGeneratorModalProps> = ({
@@ -19,6 +20,7 @@ export const ProofGeneratorModal: React.FC<ProofGeneratorModalProps> = ({
   currentProgress,
   currentStep,
   estimatedTime = "~2 minutes",
+  transactionHash,
 }) => {
   const steps = [
     { id: 1, name: "Initializing ZK Circuit", status: currentProgress > 0 ? "completed" : "current" },
@@ -131,12 +133,37 @@ export const ProofGeneratorModal: React.FC<ProofGeneratorModalProps> = ({
 
               {/* Footer */}
               <div className="mt-8 pt-6 border-t border-gray-200">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">
-                    Processing {totalEmployees} employee{totalEmployees > 1 ? "s" : ""}
-                  </span>
-                  <span className="text-gray-900 font-medium">{currentStep}</span>
-                </div>
+                {currentProgress === 100 ? (
+                  <div className="text-center space-y-3">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="font-medium">Payroll Completed Successfully!</span>
+                    </div>
+                    {transactionHash && (
+                      <a
+                        href={`https://testnet.explorer.provable.com/transaction/${transactionHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                      >
+                        <span>View on Explorer</span>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
+                    )}
+                    <p className="text-xs text-gray-500">Closing automatically...</p>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">
+                      Processing {totalEmployees} employee{totalEmployees > 1 ? "s" : ""}
+                    </span>
+                    <span className="text-gray-900 font-medium">{currentStep}</span>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
