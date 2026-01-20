@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { StatCard, Button, Card, ProofGeneratorModal } from "@repo/ui";
+import { StatCard, Button, Card, ProofGeneratorModal, TreasuryDetailsModal, AllocateFundsModal, PuzzlePermissionsModal } from "@repo/ui";
 import { TransactionProgress, EmployeeData, calculateTotalPayroll, getActiveEmployeeCount, formatCurrency } from "@repo/aleo-sdk";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
@@ -11,6 +11,9 @@ import employeesData from "../data/employees.json";
 export default function HomePage() {
   const { publicKey, connected, requestTransaction, wallet } = useWallet();
   const [showProofModal, setShowProofModal] = useState(false);
+  const [showTreasuryModal, setShowTreasuryModal] = useState(false);
+  const [showAllocateModal, setShowAllocateModal] = useState(false);
+  const [showPuzzleModal, setShowPuzzleModal] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string>("");
   const [showPuzzleNotification, setShowPuzzleNotification] = useState(false);
   const [permissionsGranted, setPermissionsGranted] = useState(false);
@@ -49,62 +52,44 @@ export default function HomePage() {
   };
 
   const handleGrantPuzzlePermissions = async () => {
-    try {
-      const { connect, Network } = await import("@puzzlehq/sdk-core");
-      
-      // Reconnect with new permissions
-      await connect({
-        dAppInfo: {
-          name: "SABLE Payroll",
-          description: "Privacy-preserving payroll management",
-          iconUrl: "https://sable.aleo/icon.png",
-        },
-        permissions: {
-          programIds: {
-            [Network.AleoTestnet]: [
-              'sable_payroll.aleo',
-              'sable_payroll_v2.aleo',
-              'sable_payroll_zk.aleo'
-            ]
-          }
+    setShowPuzzleModal(true);
+  };
+
+  const executePuzzlePermissionGrant = async () => {
+    const { connect, Network } = await import("@puzzlehq/sdk-core");
+    
+    // Reconnect with new permissions
+    await connect({
+      dAppInfo: {
+        name: "SABLE Payroll",
+        description: "Privacy-preserving payroll management",
+        iconUrl: "https://sable.aleo/icon.png",
+      },
+      permissions: {
+        programIds: {
+          [Network.AleoTestnet]: [
+            'sable_payroll.aleo',
+            'sable_payroll_v2.aleo',
+            'sable_payroll_zk.aleo'
+          ]
         }
-      });
-      
-      setPermissionsGranted(true);
-      alert("✅ Puzzle Wallet permissions updated! You can now run payroll.");
-    } catch (error) {
-      console.error("Failed to grant permissions:", error);
-      alert("Failed to update permissions. Please try again.");
-    }
+      }
+    });
+    
+    setPermissionsGranted(true);
   };
 
   const handleViewTreasuryDetails = () => {
-    const details = `
-📊 Treasury Details
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💰 Current Balance: ${formatCurrency(treasuryBalance)}
-📅 Last Updated: ${new Date(employeesData.treasuryInfo.lastUpdated).toLocaleString()}
-🏢 Company ID: ${employeesData.companyId}
-👥 Active Employees: ${activeEmployeeCount}
-💼 Monthly Payroll: ${formatCurrency(totalPayroll)}
-📊 Estimated Batches: ${estimatedBatches}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔐 Status: Encrypted on Aleo Network
-    `;
-    alert(details);
+    setShowTreasuryModal(true);
   };
 
   const handleAllocateFunds = () => {
-    const amount = prompt(`💰 Treasury Balance: ${formatCurrency(treasuryBalance)}\n\nEnter amount to allocate (in dollars):`);
-    if (amount && !isNaN(Number(amount))) {
-      const allocAmount = BigInt(Number(amount));
-      if (allocAmount > 0) {
-        setTreasuryBalance(prev => prev + allocAmount);
-        alert(`✅ Successfully allocated ${formatCurrency(allocAmount)} to treasury!\n\n💰 New Balance: ${formatCurrency(treasuryBalance + allocAmount)}`);
-      } else {
-        alert("❌ Please enter a valid amount!");
-      }
-    }
+    setShowAllocateModal(true);
+  };
+
+  const handleAllocateSubmit = (amount: number) => {
+    const allocAmount = BigInt(Math.floor(amount));
+    setTreasuryBalance(prev => prev + allocAmount);
   };
 
   const handleRunPayroll = async () => {
@@ -364,7 +349,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex justify-between items-center py-3">
                   <span className="text-gray-600">Last Allocation</span>
-                  <span className="text-gray-900 font-semibold">{new Date(employeesData.treasuryInfo.lastUpdated).toLocaleDateString()}</span>
+                  <span className="text-gray-900 font-semibold">{new Date(employeesData.treasuryInfo.lastUpdated).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })}</span>
                 </div>
               </div>
 
@@ -517,6 +502,33 @@ export default function HomePage() {
         currentStep={proofProgress.currentEmployee || "Initializing..."}
         estimatedTime="~2 minutes"
         transactionHash={transactionHash}
+      />
+
+      {/* Treasury Details Modal */}
+      <TreasuryDetailsModal
+        isOpen={showTreasuryModal}
+        onClose={() => setShowTreasuryModal(false)}
+        balance={formatCurrency(treasuryBalance)}
+        lastUpdated={new Date(employeesData.treasuryInfo.lastUpdated).toLocaleString()}
+        companyId={employeesData.companyId}
+        activeEmployees={activeEmployeeCount}
+        monthlyPayroll={formatCurrency(totalPayroll)}
+        estimatedBatches={estimatedBatches}
+      />
+
+      {/* Allocate Funds Modal */}
+      <AllocateFundsModal
+        isOpen={showAllocateModal}
+        onClose={() => setShowAllocateModal(false)}
+        currentBalance={formatCurrency(treasuryBalance)}
+        onAllocate={handleAllocateSubmit}
+      />
+
+      {/* Puzzle Permissions Modal */}
+      <PuzzlePermissionsModal
+        isOpen={showPuzzleModal}
+        onClose={() => setShowPuzzleModal(false)}
+        onGrant={executePuzzlePermissionGrant}
       />
     </div>
   );

@@ -8,3 +8,6 @@ export * from "./components/Card";
 export * from "./components/ProofGeneratorModal";
 export * from "./components/ProgressBar";
 export * from "./components/StatCard";
+export * from "./components/TreasuryDetailsModal";
+export * from "./components/AllocateFundsModal";
+export * from "./components/PuzzlePermissionsModal";
