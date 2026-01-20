@@ -1,0 +1,12 @@
+[package]
+name = "sable_identities"
+version = "0.1.0"
+description = "SABLE Identity Management - Shielded employee records with time-limited view keys"
+license = "MIT"
+
+[build]
+options = []
+
+[dependencies]
+
+[dev-dependencies]

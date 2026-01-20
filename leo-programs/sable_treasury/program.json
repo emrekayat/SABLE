@@ -1,0 +1,12 @@
+[package]
+name = "sable_treasury"
+version = "0.1.0"
+description = "SABLE Treasury Management - Corporate treasury with multi-sig and payroll allocation"
+license = "MIT"
+
+[build]
+options = []
+
+[dependencies]
+
+[dev-dependencies]
