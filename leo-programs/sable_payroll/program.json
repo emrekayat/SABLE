@@ -1,7 +1,7 @@
 {
-  "program": "sable_payroll.aleo",
-  "version": "0.1.0",
-  "description": "SABLE Payroll Distribution - Private salary distribution with batch processing and ZK tax proofs",
+  "program": "sable_payroll_v2.aleo",
+  "version": "0.2.0",
+  "description": "SABLE Payroll V2 - Private payroll with ZK proofs, employee credentials, and treasury management",
   "license": "MIT",
   "leo": "3.4.0",
   "dependencies": null,

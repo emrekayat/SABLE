@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <WalletProvider wallets={wallets} autoConnect={false} decentralization="required">
+        <WalletProvider wallets={wallets} autoConnect={false}>
           <WalletModalProvider>
             {children}
           </WalletModalProvider>

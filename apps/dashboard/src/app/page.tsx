@@ -112,17 +112,19 @@ export default function HomePage() {
         setTimeout(() => setShowPuzzleNotification(false), 15000);
       }
 
-      // Call the real deployed contract on testnet
+      // Call the real ZK privacy contract on testnet
+      // sable_payroll_v2.aleo - generates real ZK-SNARK proofs!
       // For Puzzle: this will wait until user approves in extension
       const aleoTransaction = await requestTransaction({
-        program: "sable_payroll.aleo",
-        function: "process_batch",
+        program: "sable_payroll_v2.aleo",
+        function: "process_private_batch",
         inputs: [
+          "{owner:aleo1fzpxupyv6cmnkacw85fnrxcd0fv0xvv6465rs5dz8365a7v0wygs5dxa46,balance:10000000u64}", // treasury record
           "1field", // batch_id
-          "2400000u64", // total_amount
-          "30u32" // employee_count
+          "30u32", // employee_count
+          "2400000u64" // total_committed
         ],
-        fee: 0.1, 
+        fee: 0.5, // Higher fee for ZK proof generation
       } as any);
 
       if (!aleoTransaction) {
