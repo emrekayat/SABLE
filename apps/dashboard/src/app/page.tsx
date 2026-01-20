@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { StatCard, Button, Card, ProofGeneratorModal } from "@repo/ui";
-import { aleoSDK, TransactionProgress } from "@repo/aleo-sdk";
+import { TransactionProgress } from "@repo/aleo-sdk";
+import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
+import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
 
 export default function HomePage() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string>("");
+  const { publicKey, connected } = useWallet();
   const [showProofModal, setShowProofModal] = useState(false);
   const [proofProgress, setProofProgress] = useState<TransactionProgress>({
     batchId: "batch_001",
@@ -15,22 +16,6 @@ export default function HomePage() {
     completed: 0,
     status: "pending",
   });
-
-  const handleConnectWallet = async () => {
-    try {
-      const account = await aleoSDK.connectWallet();
-      setWalletAddress(account.address);
-      setIsConnected(true);
-    } catch (error) {
-      console.error("Failed to connect wallet:", error);
-    }
-  };
-
-  const handleDisconnectWallet = () => {
-    aleoSDK.disconnectWallet();
-    setIsConnected(false);
-    setWalletAddress("");
-  };
 
   const handleRunPayroll = () => {
     setShowProofModal(true);
@@ -67,20 +52,23 @@ export default function HomePage() {
             </div>
 
             <div className="flex items-center gap-4">
-              {isConnected ? (
+              {connected && publicKey ? (
                 <div className="flex items-center gap-3">
                   <div className="text-sm">
-                    <p className="text-gray-500">Connected</p>
+                    <p className="text-gray-500 flex items-center gap-2">
+                      Connected
+                      <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                        Leo Wallet
+                      </span>
+                    </p>
                     <p className="font-mono text-xs text-gray-700">
-                      {walletAddress.slice(0, 10)}...{walletAddress.slice(-8)}
+                      {publicKey.slice(0, 10)}...{publicKey.slice(-8)}
                     </p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={handleDisconnectWallet}>
-                    Disconnect
-                  </Button>
+                  <WalletMultiButton />
                 </div>
               ) : (
-                <Button onClick={handleConnectWallet}>Connect Wallet</Button>
+                <WalletMultiButton />
               )}
             </div>
           </div>
@@ -230,12 +218,12 @@ export default function HomePage() {
               <div className="mt-6">
                 <Button
                   onClick={handleRunPayroll}
-                  disabled={!isConnected}
+                  disabled={!connected}
                   className="w-full"
                 >
-                  {isConnected ? "Run Payroll Distribution" : "Connect Wallet to Continue"}
+                  {connected ? "Run Payroll Distribution" : "Connect Wallet to Continue"}
                 </Button>
-                {!isConnected && (
+                {!connected && (
                   <p className="text-xs text-gray-500 text-center mt-2">
                     Connect your wallet to execute payroll
                   </p>
