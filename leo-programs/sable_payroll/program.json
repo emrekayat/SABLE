@@ -1,7 +1,7 @@
 {
-  "program": "sable_payroll_v2.aleo",
+  "program": "sable_payroll_zk.aleo",
   "version": "0.2.0",
-  "description": "SABLE Payroll V2 - Private payroll with ZK proofs, employee credentials, and treasury management",
+  "description": "SABLE Payroll ZK - Private payroll with ZK proofs, employee credentials, and treasury management",
   "license": "MIT",
   "leo": "3.4.0",
   "dependencies": null,

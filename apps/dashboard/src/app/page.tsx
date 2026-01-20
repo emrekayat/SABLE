@@ -38,6 +38,35 @@ export default function HomePage() {
     }, 300);
   };
 
+  const handleGrantPuzzlePermissions = async () => {
+    try {
+      const { connect, Network } = await import("@puzzlehq/sdk-core");
+      
+      // Reconnect with new permissions
+      await connect({
+        dAppInfo: {
+          name: "SABLE Payroll",
+          description: "Privacy-preserving payroll management",
+          iconUrl: "https://sable.aleo/icon.png",
+        },
+        permissions: {
+          programIds: {
+            [Network.AleoTestnet]: [
+              'sable_payroll.aleo',
+              'sable_payroll_v2.aleo',
+              'sable_payroll_zk.aleo'
+            ]
+          }
+        }
+      });
+      
+      alert("✅ Puzzle Wallet permissions updated! You can now run payroll.");
+    } catch (error) {
+      console.error("Failed to grant permissions:", error);
+      alert("Failed to update permissions. Please try again.");
+    }
+  };
+
   const handleRunPayroll = async () => {
     if (!connected || !requestTransaction) {
       alert("Please connect your wallet first");
@@ -111,20 +140,20 @@ export default function HomePage() {
         setShowPuzzleNotification(true);
         setTimeout(() => setShowPuzzleNotification(false), 15000);
       }
-
+      
       // Call the real ZK privacy contract on testnet
-      // sable_payroll_v2.aleo - generates real ZK-SNARK proofs!
-      // For Puzzle: this will wait until user approves in extension
+      // sable_payroll_zk.aleo - generates real ZK-SNARK proofs!
+      // Using verify_batch_public for demo (no records needed)
+      // Still generates ZK proof for constraint verification!
       const aleoTransaction = await requestTransaction({
-        program: "sable_payroll_v2.aleo",
-        function: "process_private_batch",
+        program: "sable_payroll_zk.aleo",
+        function: "verify_batch_public",
         inputs: [
-          "{owner:aleo1fzpxupyv6cmnkacw85fnrxcd0fv0xvv6465rs5dz8365a7v0wygs5dxa46,balance:10000000u64}", // treasury record
           "1field", // batch_id
-          "30u32", // employee_count
-          "2400000u64" // total_committed
+          "2400000u64", // total_amount
+          "30u32" // employee_count
         ],
-        fee: 0.5, // Higher fee for ZK proof generation
+        fee: 0.5, // Fee for ZK proof generation
       } as any);
 
       if (!aleoTransaction) {
@@ -369,7 +398,16 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="mt-6">
+              <div className="mt-6 space-y-3">
+                {connected && wallet?.adapter?.name === "Puzzle" && (
+                  <Button
+                    onClick={handleGrantPuzzlePermissions}
+                    variant="secondary"
+                    className="w-full"
+                  >
+                    🔓 Grant Puzzle Permissions for ZK
+                  </Button>
+                )}
                 <Button
                   onClick={handleRunPayroll}
                   disabled={!connected}
@@ -380,6 +418,11 @@ export default function HomePage() {
                 {!connected && (
                   <p className="text-xs text-gray-500 text-center mt-2">
                     Connect your wallet to execute payroll
+                  </p>
+                )}
+                {connected && wallet?.adapter?.name === "Puzzle" && (
+                  <p className="text-xs text-gray-500 text-center">
+                    💡 Click &quot;Grant Permissions&quot; first if this is your first time using ZK
                   </p>
                 )}
               </div>

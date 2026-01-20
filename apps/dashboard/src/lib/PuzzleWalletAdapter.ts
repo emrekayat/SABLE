@@ -56,7 +56,7 @@ export class PuzzleWalletAdapter extends BaseMessageSignerWalletAdapter {
         },
         permissions: {
           programIds: {
-            [Network.AleoTestnet]: ["sable_payroll.aleo", "sable_payroll_v2.aleo"],
+            [Network.AleoTestnet]: ["sable_payroll.aleo", "sable_payroll_v2.aleo", "sable_payroll_zk.aleo"],
           },
         },
       });

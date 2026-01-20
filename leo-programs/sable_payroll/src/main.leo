@@ -1,6 +1,6 @@
-// The 'sable_payroll_v2' program - Private Payroll with ZK Proofs
+// The 'sable_payroll_zk' program - Private Payroll with ZK Proofs
 // Employees receive payments privately, only payroll admin sees full data
-program sable_payroll_v2.aleo {
+program sable_payroll_zk.aleo {
     
     // Private record for treasury balance (only admin knows total)
     record Treasury {
@@ -151,6 +151,23 @@ program sable_payroll_v2.aleo {
         assert_eq(payment.batch_id, expected_batch);
         assert(payment.amount > 0u64);
         
+        return true;
+    }
+    
+    // Simple public batch verification (for demo without records)
+    // This generates ZK proofs for the computation logic
+    transition verify_batch_public(
+        public batch_id: field,
+        public total_amount: u64,
+        public employee_count: u32
+    ) -> bool {
+        // ZK Proof: Proves batch parameters are valid
+        assert(employee_count > 0u32);
+        assert(employee_count <= 1000u32);
+        assert(total_amount > 0u64);
+        
+        // Even though inputs are public, the ZK circuit still generates a proof
+        // Proving correct execution of these constraints
         return true;
     }
 }
