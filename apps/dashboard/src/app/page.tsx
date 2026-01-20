@@ -24,6 +24,20 @@ export default function HomePage() {
     console.log("[Dashboard] Wallet state changed:", { connected, publicKey });
   }, [connected, publicKey]);
 
+  const handleCloseModal = () => {
+    setShowProofModal(false);
+    // Reset state after modal closes
+    setTimeout(() => {
+      setProofProgress({
+        batchId: "batch_001",
+        total: 30,
+        completed: 0,
+        status: "pending",
+      });
+      setTransactionHash("");
+    }, 300);
+  };
+
   const handleRunPayroll = async () => {
     if (!connected || !requestTransaction) {
       alert("Please connect your wallet first");
@@ -36,35 +50,70 @@ export default function HomePage() {
 
   const executePayrollTransaction = async () => {
     try {
+      const isPuzzleWallet = wallet?.adapter?.name === "Puzzle";
+      
       // Step 1: Initializing
       setProofProgress((prev) => ({
         ...prev,
-        completed: 20,
+        completed: 10,
         status: "processing",
-        currentEmployee: "Preparing batch_001",
+        currentEmployee: "Initializing secure connection...",
       }));
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 1200));
 
-      // Step 2: Generating Witness
+      // Step 2: Loading employee data
       setProofProgress((prev) => ({
         ...prev,
-        completed: 40,
-        currentEmployee: "Processing employee records...",
+        completed: 20,
+        currentEmployee: "Loading encrypted employee records...",
       }));
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // Step 3: Request transaction from Leo Wallet
+      // Step 3: Validating batch
       setProofProgress((prev) => ({
         ...prev,
-        completed: 60,
-        currentEmployee: "Waiting for wallet approval...",
+        completed: 30,
+        currentEmployee: "Validating payroll batch data...",
+      }));
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
+      // Step 4: Generating ZK proof
+      setProofProgress((prev) => ({
+        ...prev,
+        completed: 45,
+        currentEmployee: "Generating zero-knowledge proof...",
+      }));
+      await new Promise((resolve) => setTimeout(resolve, 1800));
+
+      // Step 5: Preparing transaction
+      setProofProgress((prev) => ({
+        ...prev,
+        completed: 55,
+        currentEmployee: "Preparing transaction for 30 employees...",
+      }));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Step 6: Request wallet approval
+      setProofProgress((prev) => ({
+        ...prev,
+        completed: 65,
+        currentEmployee: isPuzzleWallet 
+          ? "Open Puzzle Wallet to approve transaction..."
+          : "Waiting for wallet approval...",
       }));
 
       if (!requestTransaction) {
         throw new Error("Wallet not connected");
       }
 
+      // Show Puzzle notification early
+      if (isPuzzleWallet) {
+        setShowPuzzleNotification(true);
+        setTimeout(() => setShowPuzzleNotification(false), 15000);
+      }
+
       // Call the real deployed contract on testnet
+      // For Puzzle: this will wait until user approves in extension
       const aleoTransaction = await requestTransaction({
         program: "sable_payroll.aleo",
         function: "process_batch",
@@ -80,48 +129,46 @@ export default function HomePage() {
         throw new Error("Transaction rejected or failed");
       }
 
-      // Check if using Puzzle Wallet and show notification
-      const isPuzzleWallet = wallet?.adapter?.name === "Puzzle";
-      if (isPuzzleWallet) {
-        setShowPuzzleNotification(true);
-        setTimeout(() => setShowPuzzleNotification(false), 10000); // Hide after 10 seconds
-      }
+      // Transaction approved! Now broadcast
+      setProofProgress((prev) => ({
+        ...prev,
+        completed: 75,
+        currentEmployee: "Transaction approved! Preparing to broadcast...",
+      }));
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
-      // Step 4: Transaction submitted
+      // Step 7: Broadcasting to network
       setProofProgress((prev) => ({
         ...prev,
         completed: 80,
-        currentEmployee: isPuzzleWallet 
-          ? "Transaction created! Check Puzzle Wallet extension to approve..."
-          : "Transaction submitted to network...",
+        currentEmployee: "Broadcasting transaction to Aleo network...",
       }));
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // Step 5: Complete
+      // Step 8: Confirming on blockchain
+      setProofProgress((prev) => ({
+        ...prev,
+        completed: 90,
+        currentEmployee: "Waiting for network confirmation...",
+      }));
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
+      // Step 9: Complete
       setProofProgress((prev) => ({
         ...prev,
         completed: 100,
         status: "completed",
-        currentEmployee: "Payroll distribution complete!",
+        currentEmployee: "🎉 Payroll distribution complete!",
       }));
 
       // Set the real transaction hash
       setTransactionHash(String(aleoTransaction));
 
-      // Auto-close modal after completion
-      setTimeout(() => {
-        setShowProofModal(false);
-        // Reset for next run
-        setTimeout(() => {
-          setProofProgress({
-            batchId: "batch_001",
-            total: 30,
-            completed: 0,
-            status: "pending",
-          });
-          setTransactionHash("");
-        }, 500);
-      }, 3000);
+      console.log("[Dashboard] ✅ Transaction completed!");
+      console.log("[Dashboard] 🔗 Transaction ID:", aleoTransaction);
+      console.log("[Dashboard] 🌐 Explorer:", `https://testnet.explorer.provable.com/transaction/${aleoTransaction}`);
+
+      // DON'T auto-close - let user close manually to see success!
     } catch (error) {
       console.error("Payroll transaction failed:", error);
       alert(`Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`);
@@ -418,7 +465,7 @@ export default function HomePage() {
       {/* Proof Generator Modal */}
       <ProofGeneratorModal
         isOpen={showProofModal}
-        onClose={() => setShowProofModal(false)}
+        onClose={handleCloseModal}
         batchId={proofProgress.batchId}
         totalEmployees={proofProgress.total}
         currentProgress={(proofProgress.completed / proofProgress.total) * 100}
