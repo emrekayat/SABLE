@@ -78,6 +78,35 @@ export default function HomePage() {
     }
   };
 
+  const handleViewTreasuryDetails = () => {
+    const details = `
+📊 Treasury Details
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💰 Current Balance: ${formatCurrency(treasuryBalance)}
+📅 Last Updated: ${new Date(employeesData.treasuryInfo.lastUpdated).toLocaleString()}
+🏢 Company ID: ${employeesData.companyId}
+👥 Active Employees: ${activeEmployeeCount}
+💼 Monthly Payroll: ${formatCurrency(totalPayroll)}
+📊 Estimated Batches: ${estimatedBatches}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔐 Status: Encrypted on Aleo Network
+    `;
+    alert(details);
+  };
+
+  const handleAllocateFunds = () => {
+    const amount = prompt(`💰 Treasury Balance: ${formatCurrency(treasuryBalance)}\n\nEnter amount to allocate (in dollars):`);
+    if (amount && !isNaN(Number(amount))) {
+      const allocAmount = BigInt(Number(amount));
+      if (allocAmount > 0) {
+        setTreasuryBalance(prev => prev + allocAmount);
+        alert(`✅ Successfully allocated ${formatCurrency(allocAmount)} to treasury!\n\n💰 New Balance: ${formatCurrency(treasuryBalance + allocAmount)}`);
+      } else {
+        alert("❌ Please enter a valid amount!");
+      }
+    }
+  };
+
   const handleRunPayroll = async () => {
     if (!connected || !requestTransaction) {
       alert("Please connect your wallet first");
@@ -340,10 +369,10 @@ export default function HomePage() {
               </div>
 
               <div className="mt-6 flex gap-3">
-                <Button variant="secondary" size="sm" className="flex-1">
+                <Button variant="secondary" size="sm" className="flex-1" onClick={handleViewTreasuryDetails}>
                   View Details
                 </Button>
-                <Button variant="ghost" size="sm" className="flex-1">
+                <Button variant="ghost" size="sm" className="flex-1" onClick={handleAllocateFunds}>
                   Allocate Funds
                 </Button>
               </div>
