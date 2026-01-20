@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { StatCard, Button, Card, ProofGeneratorModal } from "@repo/ui";
-import { TransactionProgress } from "@repo/aleo-sdk";
+import { TransactionProgress, EmployeeData, calculateTotalPayroll, getActiveEmployeeCount, formatCurrency } from "@repo/aleo-sdk";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
+import employeesData from "../data/employees.json";
 
 export default function HomePage() {
   const { publicKey, connected, requestTransaction, wallet } = useWallet();
@@ -13,12 +14,20 @@ export default function HomePage() {
   const [transactionHash, setTransactionHash] = useState<string>("");
   const [showPuzzleNotification, setShowPuzzleNotification] = useState(false);
   const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const [employees] = useState<EmployeeData[]>(employeesData.employees);
+  const [treasuryBalance, setTreasuryBalance] = useState<bigint>(BigInt(employeesData.treasuryInfo.initialBalance));
+  
   const [proofProgress, setProofProgress] = useState<TransactionProgress>({
     batchId: "batch_001",
     total: 30,
     completed: 0,
     status: "pending",
   });
+
+  // Calculate real stats from employee data
+  const totalPayroll = calculateTotalPayroll(employees);
+  const activeEmployeeCount = getActiveEmployeeCount(employees);
+  const estimatedBatches = Math.ceil(activeEmployeeCount / 30);
 
   // Debug: Log wallet state changes
   useEffect(() => {
@@ -83,54 +92,15 @@ export default function HomePage() {
     try {
       const isPuzzleWallet = wallet?.adapter?.name === "Puzzle";
       
-      // Step 1: Initializing
+      // Step 1: Prepare employee batch (first 30 active employees)
+      const activeEmployees = employees.filter(e => e.isActive).slice(0, 30);
+      
       setProofProgress((prev) => ({
         ...prev,
-        completed: 10,
+        total: activeEmployees.length,
+        completed: 0,
         status: "processing",
-        currentEmployee: "Initializing secure connection...",
-      }));
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
-      // Step 2: Loading employee data
-      setProofProgress((prev) => ({
-        ...prev,
-        completed: 20,
-        currentEmployee: "Loading encrypted employee records...",
-      }));
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Step 3: Validating batch
-      setProofProgress((prev) => ({
-        ...prev,
-        completed: 30,
-        currentEmployee: "Validating payroll batch data...",
-      }));
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
-      // Step 4: Generating ZK proof
-      setProofProgress((prev) => ({
-        ...prev,
-        completed: 45,
-        currentEmployee: "Generating zero-knowledge proof...",
-      }));
-      await new Promise((resolve) => setTimeout(resolve, 1800));
-
-      // Step 5: Preparing transaction
-      setProofProgress((prev) => ({
-        ...prev,
-        completed: 55,
-        currentEmployee: "Preparing transaction for 30 employees...",
-      }));
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Step 6: Request wallet approval
-      setProofProgress((prev) => ({
-        ...prev,
-        completed: 65,
-        currentEmployee: isPuzzleWallet 
-          ? "Open Puzzle Wallet to approve transaction..."
-          : "Waiting for wallet approval...",
+        currentEmployee: "Preparing payroll batch...",
       }));
 
       if (!requestTransaction) {
@@ -142,45 +112,60 @@ export default function HomePage() {
         setShowPuzzleNotification(true);
         setTimeout(() => setShowPuzzleNotification(false), 15000);
       }
+
+      setProofProgress((prev) => ({
+        ...prev,
+        completed: 20,
+        currentEmployee: isPuzzleWallet 
+          ? "Open Puzzle Wallet to approve transaction..."
+          : "Generating zero-knowledge proof...",
+      }));
       
-      // Call the real ZK privacy contract on testnet
-      // sable_payroll_zk.aleo - generates real ZK-SNARK proofs!
-      // Using verify_batch_public for demo (no records needed)
-      // Still generates ZK proof for constraint verification!
+      // For MVP: Use verify_batch_public as placeholder
+      // TODO: Switch to distribute_private_salary when Treasury records are set up
+      // Real call would be:
+      // const result = await distributeSalary(
+      //   treasuryRecordString,
+      //   employeeCredentialString,
+      //   batchId,
+      //   requestTransaction
+      // );
+      
+      const totalAmount = activeEmployees.reduce((sum, emp) => sum + emp.salary, 0);
+      
       const aleoTransaction = await requestTransaction({
         program: "sable_payroll_zk.aleo",
         function: "verify_batch_public",
         inputs: [
-          "1field", // batch_id
-          "2400000u64", // total_amount
-          "30u32" // employee_count
+          `${Date.now()}field`, // Use timestamp as batch_id
+          `${totalAmount}u64`,
+          `${activeEmployees.length}u32`
         ],
-        fee: 0.5, // Fee for ZK proof generation
+        fee: 0.5,
       } as any);
 
       if (!aleoTransaction) {
         throw new Error("Transaction rejected or failed");
       }
 
-      // For Puzzle: transaction is already settled at this point
-      // For Leo: transaction is broadcast and confirmed
-      // Go directly to success!
-      
       setProofProgress((prev) => ({
         ...prev,
         completed: 100,
         status: "completed",
-        currentEmployee: "🎉 Payroll distribution complete!",
+        currentEmployee: `🎉 Payroll distributed to ${activeEmployees.length} employees!`,
       }));
 
-      // Set the real transaction hash
+      // Update treasury balance (deduct payroll)
+      setTreasuryBalance(prev => prev - BigInt(totalAmount));
+
       setTransactionHash(String(aleoTransaction));
 
       console.log("[Dashboard] ✅ Transaction completed!");
+      console.log("[Dashboard] 👥 Employees paid:", activeEmployees.length);
+      console.log("[Dashboard] 💰 Total amount:", totalAmount);
       console.log("[Dashboard] 🔗 Transaction ID:", aleoTransaction);
       console.log("[Dashboard] 🌐 Explorer:", `https://testnet.explorer.provable.com/transaction/${aleoTransaction}`);
 
-      // DON'T auto-close - let user close manually to see success!
     } catch (error) {
       console.error("Payroll transaction failed:", error);
       alert(`Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`);
@@ -285,9 +270,9 @@ export default function HomePage() {
         >
           <StatCard
             label="Total Payroll (This Month)"
-            value="$2.4M"
+            value={formatCurrency(totalPayroll)}
             trend={{ value: 12, isPositive: true }}
-            description="Across 847 employees"
+            description={`Across ${activeEmployeeCount} employees`}
             icon={
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -296,7 +281,7 @@ export default function HomePage() {
           />
           <StatCard
             label="Active Employees"
-            value="847"
+            value={activeEmployeeCount.toString()}
             trend={{ value: 3, isPositive: true }}
             description="Shielded identities"
             icon={
@@ -306,10 +291,10 @@ export default function HomePage() {
             }
           />
           <StatCard
-            label="ZK Proofs Generated"
-            value="12,847"
-            trend={{ value: 28, isPositive: true }}
-            description="All-time transaction count"
+            label="Treasury Balance"
+            value={formatCurrency(treasuryBalance)}
+            trend={{ value: 5, isPositive: false }}
+            description="Available funds for payroll"
             icon={
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -342,15 +327,15 @@ export default function HomePage() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-3 border-b border-gray-100">
                   <span className="text-gray-600">Available Balance</span>
-                  <span className="font-mono font-bold text-gray-900">████████ Aleo</span>
+                  <span className="font-mono font-bold text-gray-900">{formatCurrency(treasuryBalance)}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-gray-100">
                   <span className="text-gray-600">Authorized Signers</span>
-                  <span className="text-gray-900 font-semibold">3 of 5</span>
+                  <span className="text-gray-900 font-semibold">1 of 1</span>
                 </div>
                 <div className="flex justify-between items-center py-3">
                   <span className="text-gray-600">Last Allocation</span>
-                  <span className="text-gray-900 font-semibold">2 hours ago</span>
+                  <span className="text-gray-900 font-semibold">{new Date(employeesData.treasuryInfo.lastUpdated).toLocaleDateString()}</span>
                 </div>
               </div>
 
@@ -396,7 +381,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex justify-between items-center py-3">
                   <span className="text-gray-600">Estimated Batches</span>
-                  <span className="text-gray-900 font-semibold">29 batches</span>
+                  <span className="text-gray-900 font-semibold">{estimatedBatches} {estimatedBatches === 1 ? 'batch' : 'batches'}</span>
                 </div>
               </div>
 

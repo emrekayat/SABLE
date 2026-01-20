@@ -3,8 +3,8 @@
  * Provides clean abstractions over Provable SDK for SABLE-specific operations
  */
 
-// Re-export core Provable SDK types
-export * from "@provablehq/sdk";
+// Re-export record management functions (without Provable SDK to avoid WASM issues)
+export * from "./records";
 
 // SABLE-specific types
 export interface AleoAccount {
