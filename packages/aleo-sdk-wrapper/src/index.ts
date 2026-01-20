@@ -61,7 +61,6 @@ export class SableAleoSDK {
 
   constructor(networkUrl: string = "https://api.explorer.provable.com/v1/testnet") {
     this.networkUrl = networkUrl;
-    console.log(`Aleo SDK initialized with network: ${networkUrl}`);
   }
 
   /**
@@ -197,8 +196,8 @@ export class SableAleoSDK {
   async issueAuditorViewKey(
     companyId: string,
     auditorAddress: string,
-    expiresAt: number,
-    scope: "full" | "tax_only" | "headcount_only"
+    _expiresAt: number,
+    _scope: "full" | "tax_only" | "headcount_only"
   ): Promise<string> {
     if (!this.account) {
       throw new Error("Wallet not connected");
@@ -206,7 +205,6 @@ export class SableAleoSDK {
 
     // In production, this would call sable_identities.aleo/issue_auditor_key
     const viewKeyId = `viewkey_${companyId}_${auditorAddress}_${Date.now()}`;
-    console.log(`Issued view key ${viewKeyId} expiring at ${expiresAt} with scope ${scope}`);
 
     return viewKeyId;
   }
@@ -214,32 +212,29 @@ export class SableAleoSDK {
   /**
    * Verify auditor view key validity
    */
-  async verifyAuditorKey(viewKeyId: string, currentTime: number): Promise<boolean> {
+  async verifyAuditorKey(_viewKeyId: string, _currentTime: number): Promise<boolean> {
     // In production, this would call sable_identities.aleo/verify_auditor_access
     // For now, simulate verification
-    console.log(`Verifying auditor key ${viewKeyId} at time ${currentTime}`);
     return true;
   }
 
   /**
    * Helper: Simulate transaction for demo purposes
    */
-  private async simulateTransaction(employee: EmployeePayment): Promise<void> {
+  private async simulateTransaction(_employee: EmployeePayment): Promise<void> {
     // Simulate proof generation time
-    console.log(`Simulating transaction for employee ${employee.employeeId}`);
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
 
   /**
    * Get batch status from chain
    */
-  async getBatchStatus(batchId: string): Promise<{
+  async getBatchStatus(_batchId: string): Promise<{
     status: "pending" | "processing" | "completed";
     employeesPaid: number;
     totalEmployees: number;
   }> {
     // Placeholder: In production, query sable_payroll.aleo/batch_registry
-    console.log(`Getting status for batch ${batchId}`);
     return {
       status: "completed",
       employeesPaid: 30,
@@ -250,9 +245,8 @@ export class SableAleoSDK {
   /**
    * Get company payroll total (public mapping)
    */
-  async getCompanyPayrollTotal(companyId: string): Promise<bigint> {
+  async getCompanyPayrollTotal(_companyId: string): Promise<bigint> {
     // Placeholder: In production, query sable_payroll.aleo/company_payroll_total
-    console.log(`Getting payroll total for company ${companyId}`);
     return BigInt(1000000); // Placeholder
   }
 }
