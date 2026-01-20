@@ -5,7 +5,7 @@ import {
   WalletNotConnectedError,
   WalletError
 } from "@demox-labs/aleo-wallet-adapter-base";
-import { connect, disconnect, Network, requestCreateEvent, EventType } from "@puzzlehq/sdk-core";
+import { connect, disconnect, Network, requestCreateEvent, EventType, getEvent } from "@puzzlehq/sdk-core";
 
 export const PuzzleWalletName = "Puzzle" as WalletName<"Puzzle">;
 
@@ -101,12 +101,6 @@ export class PuzzleWalletAdapter extends BaseMessageSignerWalletAdapter {
     try {
       console.log("[PuzzleWallet] Requesting transaction:", params);
       
-      // Debug: Check what's available on window.puzzle
-      if (typeof window !== 'undefined' && (window as any).puzzle) {
-        console.log("[PuzzleWallet] window.puzzle available, methods:", Object.keys((window as any).puzzle));
-        console.log("[PuzzleWallet] Full puzzle object:", (window as any).puzzle);
-      }
-      
       const response = await requestCreateEvent({
         type: EventType.Execute,
         programId: params.program || "sable_payroll.aleo",
@@ -126,12 +120,65 @@ export class PuzzleWalletAdapter extends BaseMessageSignerWalletAdapter {
         throw new Error("No event ID returned from Puzzle Wallet");
       }
       
+      const eventId = response.eventId;
       console.log("[PuzzleWallet] ✅ Event created successfully!");
-      console.log("[PuzzleWallet] 📱 Event ID:", response.eventId);
-      console.log("[PuzzleWallet] ⚠️  Open Puzzle Wallet extension and check the 'Events' or 'Pending' tab");
-      console.log("[PuzzleWallet] ℹ️  Puzzle Wallet doesn't auto-popup like Leo Wallet - you need to manually approve in the extension");
+      console.log("[PuzzleWallet] 📱 Event ID:", eventId);
+      console.log("[PuzzleWallet] ⏳ Waiting for user approval in Puzzle Wallet extension...");
       
-      return response.eventId;
+      // Poll for event status - wait for user approval
+      return new Promise((resolve, reject) => {
+        let isResolved = false;
+        
+        const checkInterval = setInterval(async () => {
+          if (isResolved) return;
+          
+          try {
+            const eventData = await getEvent({ id: eventId, address: this._publicKey || undefined });
+            const status = eventData.event.status;
+            console.log("[PuzzleWallet] Event status check:", status);
+            
+            // Check for success (case-insensitive)
+            if (status?.toLowerCase() === 'settled' || status?.toLowerCase() === 'completed') {
+              isResolved = true;
+              clearInterval(checkInterval);
+              
+              // Log full event data to see transaction ID
+              console.log("[PuzzleWallet] Full event data:", eventData.event);
+              
+              // Get transaction ID from event (common fields: transactionId, txId, transaction_id)
+              const txId = (eventData.event as any).transactionId || 
+                           (eventData.event as any).txId || 
+                           (eventData.event as any).transaction_id ||
+                           (eventData.event as any).id;
+              
+              console.log("[PuzzleWallet] ✅ Transaction approved and settled!");
+              if (txId && txId !== eventId) {
+                console.log("[PuzzleWallet] 🔗 Transaction ID:", txId);
+              }
+              
+              // Return transaction ID if available, otherwise event ID
+              resolve(txId || eventId);
+            } 
+            // Check for rejection (case-insensitive)
+            else if (status?.toLowerCase() === 'rejected' || status?.toLowerCase() === 'failed') {
+              isResolved = true;
+              clearInterval(checkInterval);
+              reject(new WalletError("Transaction rejected by user"));
+            }
+            // Continue polling if status is 'pending', 'creating', etc.
+          } catch (pollError) {
+            console.error("[PuzzleWallet] Error checking event status:", pollError);
+          }
+        }, 2000); // Check every 2 seconds
+        
+        // 120 second timeout (2 minutes)
+        setTimeout(() => {
+          if (!isResolved) {
+            clearInterval(checkInterval);
+            reject(new WalletError("Transaction approval timeout - please check Puzzle Wallet extension"));
+          }
+        }, 120000);
+      });
     } catch (error) {
       console.error("[PuzzleWallet] Transaction error:", error);
       throw new WalletError("Failed to create transaction: " + (error as Error).message);
