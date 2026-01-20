@@ -8,9 +8,10 @@ import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
 
 export default function HomePage() {
-  const { publicKey, connected, requestTransaction } = useWallet();
+  const { publicKey, connected, requestTransaction, wallet } = useWallet();
   const [showProofModal, setShowProofModal] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string>("");
+  const [showPuzzleNotification, setShowPuzzleNotification] = useState(false);
   const [proofProgress, setProofProgress] = useState<TransactionProgress>({
     batchId: "batch_001",
     total: 30,
@@ -72,18 +73,27 @@ export default function HomePage() {
           "2400000u64", // total_amount
           "30u32" // employee_count
         ],
-        fee: 100000, // 0.0001 Aleo
+        fee: 0.1, 
       } as any);
 
       if (!aleoTransaction) {
         throw new Error("Transaction rejected or failed");
       }
 
+      // Check if using Puzzle Wallet and show notification
+      const isPuzzleWallet = wallet?.adapter?.name === "Puzzle";
+      if (isPuzzleWallet) {
+        setShowPuzzleNotification(true);
+        setTimeout(() => setShowPuzzleNotification(false), 10000); // Hide after 10 seconds
+      }
+
       // Step 4: Transaction submitted
       setProofProgress((prev) => ({
         ...prev,
         completed: 80,
-        currentEmployee: "Transaction submitted to network...",
+        currentEmployee: isPuzzleWallet 
+          ? "Transaction created! Check Puzzle Wallet extension to approve..."
+          : "Transaction submitted to network...",
       }));
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -127,6 +137,32 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Puzzle Wallet Notification */}
+      {showPuzzleNotification && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-blue-600 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 max-w-md"
+        >
+          <svg className="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <div>
+            <p className="font-semibold">Transaction Created!</p>
+            <p className="text-sm text-blue-100">Open your Puzzle Wallet extension to approve the transaction</p>
+          </div>
+          <button 
+            onClick={() => setShowPuzzleNotification(false)}
+            className="ml-2 text-blue-200 hover:text-white"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </motion.div>
+      )}
+
       {/* Navigation */}
       <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 py-4">

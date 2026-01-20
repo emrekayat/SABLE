@@ -5,7 +5,7 @@ import {
   WalletNotConnectedError,
   WalletError
 } from "@demox-labs/aleo-wallet-adapter-base";
-import { connect, disconnect, Network } from "@puzzlehq/sdk-core";
+import { connect, disconnect, Network, requestCreateEvent, EventType } from "@puzzlehq/sdk-core";
 
 export const PuzzleWalletName = "Puzzle" as WalletName<"Puzzle">;
 
@@ -93,11 +93,49 @@ export class PuzzleWalletAdapter extends BaseMessageSignerWalletAdapter {
     }
   }
 
-  async requestTransaction(_params: any): Promise<string> {
+  async requestTransaction(params: any): Promise<string> {
     if (!this._connected || !this._publicKey) {
       throw new WalletNotConnectedError();
     }
-    throw new Error("Transaction support for Puzzle wallet coming soon");
+    
+    try {
+      console.log("[PuzzleWallet] Requesting transaction:", params);
+      
+      // Debug: Check what's available on window.puzzle
+      if (typeof window !== 'undefined' && (window as any).puzzle) {
+        console.log("[PuzzleWallet] window.puzzle available, methods:", Object.keys((window as any).puzzle));
+        console.log("[PuzzleWallet] Full puzzle object:", (window as any).puzzle);
+      }
+      
+      const response = await requestCreateEvent({
+        type: EventType.Execute,
+        programId: params.program || "sable_payroll.aleo",
+        functionId: params.functionName || params.function || "process_batch",
+        inputs: params.inputs || [],
+        fee: params.fee || 0.1,
+        address: this._publicKey,
+      });
+      
+      console.log("[PuzzleWallet] Transaction event created:", response);
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      if (!response.eventId) {
+        throw new Error("No event ID returned from Puzzle Wallet");
+      }
+      
+      console.log("[PuzzleWallet] ✅ Event created successfully!");
+      console.log("[PuzzleWallet] 📱 Event ID:", response.eventId);
+      console.log("[PuzzleWallet] ⚠️  Open Puzzle Wallet extension and check the 'Events' or 'Pending' tab");
+      console.log("[PuzzleWallet] ℹ️  Puzzle Wallet doesn't auto-popup like Leo Wallet - you need to manually approve in the extension");
+      
+      return response.eventId;
+    } catch (error) {
+      console.error("[PuzzleWallet] Transaction error:", error);
+      throw new WalletError("Failed to create transaction: " + (error as Error).message);
+    }
   }
 
   async requestRecords(_program: string): Promise<any[]> {
