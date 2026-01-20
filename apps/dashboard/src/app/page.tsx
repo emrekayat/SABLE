@@ -12,6 +12,7 @@ export default function HomePage() {
   const [showProofModal, setShowProofModal] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string>("");
   const [showPuzzleNotification, setShowPuzzleNotification] = useState(false);
+  const [permissionsGranted, setPermissionsGranted] = useState(false);
   const [proofProgress, setProofProgress] = useState<TransactionProgress>({
     batchId: "batch_001",
     total: 30,
@@ -60,6 +61,7 @@ export default function HomePage() {
         }
       });
       
+      setPermissionsGranted(true);
       alert("✅ Puzzle Wallet permissions updated! You can now run payroll.");
     } catch (error) {
       console.error("Failed to grant permissions:", error);
@@ -399,7 +401,7 @@ export default function HomePage() {
               </div>
 
               <div className="mt-6 space-y-3">
-                {connected && wallet?.adapter?.name === "Puzzle" && (
+                {connected && wallet?.adapter?.name === "Puzzle" && !permissionsGranted && (
                   <Button
                     onClick={handleGrantPuzzlePermissions}
                     variant="secondary"
@@ -410,7 +412,7 @@ export default function HomePage() {
                 )}
                 <Button
                   onClick={handleRunPayroll}
-                  disabled={!connected}
+                  disabled={!connected || (wallet?.adapter?.name === "Puzzle" && !permissionsGranted)}
                   className="w-full"
                 >
                   {connected ? "Run Payroll Distribution" : "Connect Wallet to Continue"}
@@ -420,9 +422,14 @@ export default function HomePage() {
                     Connect your wallet to execute payroll
                   </p>
                 )}
-                {connected && wallet?.adapter?.name === "Puzzle" && (
+                {connected && wallet?.adapter?.name === "Puzzle" && !permissionsGranted && (
                   <p className="text-xs text-gray-500 text-center">
-                    💡 Click &quot;Grant Permissions&quot; first if this is your first time using ZK
+                    💡 Click &quot;Grant Permissions&quot; first to enable payroll distribution
+                  </p>
+                )}
+                {connected && wallet?.adapter?.name === "Puzzle" && permissionsGranted && (
+                  <p className="text-xs text-green-600 text-center">
+                    ✅ Permissions granted! Ready to run payroll
                   </p>
                 )}
               </div>
