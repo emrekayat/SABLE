@@ -19,4 +19,6 @@
       "cache": false
     }
   }
+  ,
+  "globalEnv": ["PRIVATE_KEY"]
 }
