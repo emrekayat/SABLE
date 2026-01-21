@@ -29,6 +29,12 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="alternate icon" href="/sable-logo.png" type="image/png" />
+        <title>SABLE - Privacy-Preserving Payroll on Aleo</title>
+        <meta name="description" content="Zero-knowledge payroll management system built on Aleo blockchain" />
+      </head>
       <body className={inter.className}>
         <WalletProvider wallets={wallets} autoConnect={false}>
           <WalletModalProvider>

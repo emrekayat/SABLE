@@ -1,8 +1,13 @@
+<div align="center">
+  <img src="sable-logo.png" alt="SABLE Logo" width="120" height="120">
+  
 # SABLE — The Invisible Engine of Global Trade
 
 **Private Payroll & Invoice Management on Aleo Blockchain**
 
 > 100% Financial Privacy. 100% Audit Compliance.
+
+</div>
 
 ## 🎯 Project Overview
 

@@ -222,16 +222,17 @@ export default function HomePage() {
       )}
 
       {/* Navigation */}
-      <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-30">
+      <nav className="border-b border-gray-200 bg-white sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">S</span>
+
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 flex items-center justify-center p-0">
+                <img src="/sable-logo.png" alt="SABLE" className="w-full h-full object-contain" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">SABLE</h1>
-                <p className="text-xs text-gray-500">The Invisible Engine</p>
+                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">SABLE</h1>
+                <p className="text-base text-gray-500 font-medium">The Invisible Engine</p>
               </div>
             </div>
 
