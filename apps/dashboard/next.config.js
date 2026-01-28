@@ -2,7 +2,6 @@
 const nextConfig = {
   transpilePackages: ["@repo/ui", "@repo/aleo-sdk"],
   reactStrictMode: true,
-  swcMinify: true,
   output: "standalone", // Changed from 'export' to allow dynamic features
   webpack: (config, { isServer }) => {
     // Handle WASM files

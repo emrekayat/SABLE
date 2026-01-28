@@ -9,7 +9,7 @@ import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
 import employeesData from "../data/employees.json";
 
 export default function HomePage() {
-  const { publicKey, connected, requestTransaction, wallet } = useWallet();
+  const { publicKey, connected, requestTransaction } = useWallet();
   const [showProofModal, setShowProofModal] = useState(false);
   const [showTreasuryModal, setShowTreasuryModal] = useState(false);
   const [showAllocateModal, setShowAllocateModal] = useState(false);
