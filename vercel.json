@@ -3,5 +3,5 @@
   "buildCommand": "pnpm turbo run build --filter=dashboard",
   "devCommand": "pnpm turbo run dev --filter=dashboard",
   "installCommand": "pnpm install",
-  "outputDirectory": "apps/dashboard/.next"
+  "outputDirectory": ".next"
 }
