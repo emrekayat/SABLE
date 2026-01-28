@@ -23,9 +23,6 @@ importers:
       '@demox-labs/aleo-wallet-adapter-base':
         specifier: ^0.0.23
         version: 0.0.23
-      '@demox-labs/aleo-wallet-adapter-leo':
-        specifier: ^0.0.25
-        version: 0.0.25
       '@demox-labs/aleo-wallet-adapter-react':
         specifier: ^0.0.22
         version: 0.0.22(react@18.3.1)
@@ -160,9 +157,6 @@ packages:
 
   '@demox-labs/aleo-wallet-adapter-base@0.0.23':
     resolution: {integrity: sha512-p0WvbKWuP2Rt05DAqnuXJV20k0J76p0DQvcVTck85MHCGwtak+xeJg6nxBl6Q/n7uc/opEWN0BLHqhynVzWlXA==}
-
-  '@demox-labs/aleo-wallet-adapter-leo@0.0.25':
-    resolution: {integrity: sha512-8Te8YiPR2k0We8vk/OBjdM18V/dDq0RpW743xCn2wotUzm4LA3hJwEW2+Jwy+BJqyNHBa7wIljdttEAT3OY6yA==}
 
   '@demox-labs/aleo-wallet-adapter-react@0.0.22':
     resolution: {integrity: sha512-X4Ys69MdEErzlQn8G+edf6LuQSMgKAZjOVaB9Wae1ZfJTABzVF21/0Y8/iodlVcNeTPoo5h3sKv3gLJV6zyeGg==}
@@ -1535,11 +1529,6 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nanoid@4.0.2:
-    resolution: {integrity: sha512-7ZtY5KTCNheRGfEFxnedV5zFiORN1+Y1N6zvPTnHQd8ENUvfaDBeuJDZb2bN/oXwXxu3qkTXDzy57W5vAmDTBw==}
-    engines: {node: ^14 || ^16 || >=18}
-    hasBin: true
-
   napi-postinstall@0.3.4:
     resolution: {integrity: sha512-PHI5f1O0EP5xJ9gQmFGMS6IZcrVvTjpXjz7Na41gTE7eE2hK11lg04CECCYEEjdc17EV4DO+fkGEtt7TpTaTiQ==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
@@ -2122,11 +2111,6 @@ snapshots:
   '@demox-labs/aleo-wallet-adapter-base@0.0.23':
     dependencies:
       eventemitter3: 4.0.7
-
-  '@demox-labs/aleo-wallet-adapter-leo@0.0.25':
-    dependencies:
-      '@demox-labs/aleo-wallet-adapter-base': 0.0.23
-      nanoid: 4.0.2
 
   '@demox-labs/aleo-wallet-adapter-react@0.0.22(react@18.3.1)':
     dependencies:
@@ -3629,8 +3613,6 @@ snapshots:
       thenify-all: 1.6.0
 
   nanoid@3.3.11: {}
-
-  nanoid@4.0.2: {}
 
   napi-postinstall@0.3.4: {}
 
