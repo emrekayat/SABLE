@@ -3,6 +3,5 @@
   "buildCommand": "pnpm turbo run build --filter=dashboard",
   "devCommand": "pnpm turbo run dev --filter=dashboard",
   "installCommand": "pnpm install",
-  "outputDirectory": "apps/dashboard/.next",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/dashboard"
+  "outputDirectory": "apps/dashboard/.next"
 }
