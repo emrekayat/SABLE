@@ -4,7 +4,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@demox-labs/aleo-wallet-adapter-react";
 import { WalletModalProvider } from "@demox-labs/aleo-wallet-adapter-reactui";
-import { LeoWalletAdapter } from "@demox-labs/aleo-wallet-adapter-leo";
 import { PuzzleWalletAdapter } from "../lib/PuzzleWalletAdapter";
 import { useMemo } from "react";
 
@@ -19,9 +18,6 @@ export default function RootLayout({
 }) {
   const wallets = useMemo(
     () => [
-      new LeoWalletAdapter({
-        appName: "SABLE",
-      }),
       new PuzzleWalletAdapter(),
     ],
     []

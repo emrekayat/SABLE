@@ -104,7 +104,8 @@ export default function HomePage() {
 
   const executePayrollTransaction = async () => {
     try {
-      const isPuzzleWallet = wallet?.adapter?.name === "Puzzle";
+      // Only Puzzle Wallet is supported
+      const isPuzzleWallet = true;
       
       // Step 1: Prepare employee batch (first 30 active employees)
       const activeEmployees = employees.filter(e => e.isActive).slice(0, 30);
@@ -237,13 +238,19 @@ export default function HomePage() {
             </div>
 
             <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-full">
+                <svg className="w-4 h-4 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <span className="text-xs font-medium text-purple-700">Puzzle Wallet Only</span>
+              </div>
               {connected && publicKey ? (
                 <div className="flex items-center gap-3">
                   <div className="text-sm">
                     <p className="text-gray-500 flex items-center gap-2">
                       Connected
                       <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
-                        Wallet
+                        Puzzle
                       </span>
                     </p>
                     <p className="font-mono text-xs text-gray-700">
@@ -401,7 +408,7 @@ export default function HomePage() {
               </div>
 
               <div className="mt-6 space-y-3">
-                {connected && wallet?.adapter?.name === "Puzzle" && !permissionsGranted && (
+                {connected && !permissionsGranted && (
                   <Button
                     onClick={handleGrantPuzzlePermissions}
                     variant="secondary"
@@ -412,22 +419,22 @@ export default function HomePage() {
                 )}
                 <Button
                   onClick={handleRunPayroll}
-                  disabled={!connected || (wallet?.adapter?.name === "Puzzle" && !permissionsGranted)}
+                  disabled={!connected || !permissionsGranted}
                   className="w-full"
                 >
-                  {connected ? "Run Payroll Distribution" : "Connect Wallet to Continue"}
+                  {connected ? "Run Payroll Distribution" : "Connect Puzzle Wallet to Continue"}
                 </Button>
                 {!connected && (
                   <p className="text-xs text-gray-500 text-center mt-2">
-                    Connect your wallet to execute payroll
+                    Connect your Puzzle Wallet to execute payroll
                   </p>
                 )}
-                {connected && wallet?.adapter?.name === "Puzzle" && !permissionsGranted && (
+                {connected && !permissionsGranted && (
                   <p className="text-xs text-gray-500 text-center">
                     💡 Click &quot;Grant Permissions&quot; first to enable payroll distribution
                   </p>
                 )}
-                {connected && wallet?.adapter?.name === "Puzzle" && permissionsGranted && (
+                {connected && permissionsGranted && (
                   <p className="text-xs text-green-600 text-center">
                     ✅ Permissions granted! Ready to run payroll
                   </p>
